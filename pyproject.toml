@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tfmd"
+version = "0.1.0"
+description = "Terminal Friendly Markdown — a fast, pretty Markdown previewer for WSL/Linux terminals."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["rich>=13.7"]
+
+[project.scripts]
+tfmd = "tfmd.cli:main"
+
+[tool.setuptools]
+packages = ["tfmd"]
