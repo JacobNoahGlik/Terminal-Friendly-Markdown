@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+tfmd/__init__.py
+tfmd/cli.py
+tfmd.egg-info/PKG-INFO
+tfmd.egg-info/SOURCES.txt
+tfmd.egg-info/dependency_links.txt
+tfmd.egg-info/entry_points.txt
+tfmd.egg-info/requires.txt
+tfmd.egg-info/top_level.txt
