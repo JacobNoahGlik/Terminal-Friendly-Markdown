@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+# TFMD — Terminal Friendly Markdown (v1)
+# Python 3.9+ (uses typing.Optional/Tuple for 3.9 compatibility)
 import argparse
-import io
-import os
 import re
 import sys
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -24,11 +25,11 @@ DEFAULT_THEME = Theme({
     "markdown.code": "none",
     "markdown.link": "underline",
     "markdown.hr": "dim",
-    "mdpx.toc.header": "bold",
-    "mdpx.toc.item": "dim",
+    "tfmd.toc.header": "bold",
+    "tfmd.toc.item": "dim",
 })
 
-def strip_front_matter(text: str) -> tuple[str, str | None]:
+def strip_front_matter(text: str) -> Tuple[str, Optional[str]]:
     """Return (content, front_matter_text_or_none)."""
     m = YAML_FM_RE.match(text)
     if not m:
@@ -36,9 +37,9 @@ def strip_front_matter(text: str) -> tuple[str, str | None]:
     fm = m.group(0)
     return text[m.end():], fm
 
-def extract_headings(md_text: str) -> list[tuple[int, str]]:
+def extract_headings(md_text: str) -> List[Tuple[int, str]]:
     """Very simple heading extractor (#..######). Returns list of (level, text)."""
-    out = []
+    out: List[Tuple[int, str]] = []
     for line in md_text.splitlines():
         if not line.startswith("#"):
             continue
@@ -47,7 +48,7 @@ def extract_headings(md_text: str) -> list[tuple[int, str]]:
             out.append((len(m.group(1)), m.group(2)))
     return out
 
-def make_toc_table(headings: list[tuple[int, str]]) -> Table:
+def make_toc_table(headings: List[Tuple[int, str]]) -> Table:
     tbl = Table.grid(expand=True)
     tbl.add_column(justify="left", ratio=1, no_wrap=True)
     if not headings:
@@ -56,15 +57,15 @@ def make_toc_table(headings: list[tuple[int, str]]) -> Table:
     for lvl, text in headings:
         indent = "  " * (lvl - 1)
         bullet = "•"
-        tbl.add_row(f"{indent}{bullet} [mdpx.toc.item]{text}[/]")
+        tbl.add_row(f"{indent}{bullet} [tfmd.toc.item]{text}[/]")
     return tbl
 
 # --- CLI ---------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="mdpx",
-        description="A Markdown previewer for the terminal (WSL/Linux)."
+        prog="tfmd",
+        description="Terminal Friendly Markdown — a Markdown previewer for WSL/Linux."
     )
     p.add_argument("file", nargs="?", help="Markdown file (or omit to read stdin)")
     p.add_argument("-p", "--pager", choices=["auto", "always", "never"], default="auto",
@@ -83,7 +84,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Disable custom theme styling (plain Rich defaults).")
     return p
 
-def choose_theme(name: str) -> Theme | None:
+def choose_theme(name: str) -> Optional[Theme]:
     if name == "default":
         return DEFAULT_THEME
     if name == "light":
@@ -115,26 +116,25 @@ def should_page(pager_flag: str, console: Console) -> bool:
 
 # --- Main --------------------------------------------------------------------
 
-def load_text(path_arg: str | None) -> tuple[str, Path | None]:
+def load_text(path_arg: Optional[str]) -> Tuple[str, Optional[Path]]:
     if path_arg:
         p = Path(path_arg)
         try:
             return p.read_text(encoding="utf-8"), p
         except UnicodeDecodeError:
-            # Fallback to binary + replace errors
             return p.read_bytes().decode("utf-8", errors="replace"), p
     else:
         data = sys.stdin.read()
         return data, None
 
-def render_doc(console: Console, text: str, width: int | None, show_toc: bool, show_fm: bool, soft_wrap: bool):
+def render_doc(console: Console, text: str, width: Optional[int], show_toc: bool, show_fm: bool, soft_wrap: bool):
     content, fm = strip_front_matter(text)
     headings = extract_headings(content)
 
     if show_toc:
         toc_panel = Panel(
             make_toc_table(headings),
-            title="[mdpx.toc.header]Table of Contents[/]",
+            title="[tfmd.toc.header]Table of Contents[/]",
             expand=False,
             border_style="dim",
         )
@@ -155,14 +155,11 @@ def main(argv=None) -> int:
     theme = None if args.no_style else choose_theme(args.theme)
     console = Console(theme=theme, force_terminal=None, width=args.width, record=False)
 
-    text, path = load_text(args.file)
+    text, _path = load_text(args.file)
 
-    # Decide paging
     use_pager = should_page(args.pager, console)
 
-    # Render
     if use_pager:
-        # Use 'less -R' passthrough; respects terminal, lets you scroll & search.
         with console.pager(styles=True):
             render_doc(console, text, args.width, args.toc, args.show_fm, args.soft_wrap)
     else:
