@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from tfmd import __version__
+
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -82,6 +84,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Quick style presets.")
     p.add_argument("--no-style", action="store_true",
                    help="Disable custom theme styling (plain Rich defaults).")
+    p.add_argument("--version", action="version", version=f"tfmd {__version__}")
     return p
 
 def choose_theme(name: str) -> Optional[Theme]:
@@ -145,9 +148,14 @@ def render_doc(console: Console, text: str, width: Optional[int], show_toc: bool
         console.print(Panel.fit(Syntax(fm.strip(), "yaml", word_wrap=soft_wrap), title="front-matter", border_style="dim"))
         console.print()
 
-    md = Markdown(content, code_theme="default", justify=None, inline_code_lexer="",
-                  hyperlinks=True, soft_wrap=soft_wrap)
-    console.print(md, width=width)
+    md = Markdown(
+        content,
+        code_theme="default",
+        justify=None,
+        inline_code_lexer="",
+        hyperlinks=True,
+    )
+    console.print(md, width=width, soft_wrap=soft_wrap)
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
