@@ -1,0 +1,2 @@
+[console_scripts]
+tfmd = tfmd.cli:main

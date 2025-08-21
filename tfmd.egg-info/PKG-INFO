@@ -1,0 +1,47 @@
+Metadata-Version: 2.4
+Name: tfmd
+Version: 0.1.0
+Summary: Terminal Friendly Markdown — a fast, pretty Markdown previewer for WSL/Linux terminals.
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: rich>=13.7
+Dynamic: license-file
+
+# Terminal Friendly Markdown
+
+## install deps
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install rich
+```
+
+## run on a file
+```bash
+python tfmd/cli.py README.md
+```
+
+## pipe from stdin
+```bash
+cat README.md | python tfmd/cli.py --toc
+```
+
+## always page through less -R
+```bash
+python tfmd/cli.py README.md --pager always
+```
+
+## render without paging (useful when redirecting to a file)
+```bash
+python tfmd/cli.py README.md --pager never > out.txt
+```
+
+## soft wrap long lines, show (otherwise hidden) YAML front-matter
+```bash
+python tfmd/cli.py README.md --soft-wrap --show-fm
+```
+
+## force a width (useful for screenshots)
+```bash
+python tfmd/cli.py README.md --width 100
+```
