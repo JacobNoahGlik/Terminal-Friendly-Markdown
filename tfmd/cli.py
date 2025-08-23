@@ -31,6 +31,26 @@ DEFAULT_THEME = Theme({
     "tfmd.toc.item": "dim",
 })
 
+GH_DARK = Theme({
+    "markdown.h1": "bold white",
+    "markdown.h2": "bold white",
+    "markdown.h3": "bold white",
+    "markdown.link": "underline cyan",
+    "markdown.hr": "color(240)",
+    "tfmd.toc.header": "bold",
+    "tfmd.toc.item": "dim",
+})
+
+GH_LIGHT = Theme({
+    "markdown.h1": "bold black",
+    "markdown.h2": "bold black",
+    "markdown.h3": "bold black",
+    "markdown.link": "underline blue",
+    "markdown.hr": "color(246)",
+    "tfmd.toc.header": "bold",
+    "tfmd.toc.item": "dim",
+})
+
 def strip_front_matter(text: str) -> Tuple[str, Optional[str]]:
     """Return (content, front_matter_text_or_none)."""
     m = YAML_FM_RE.match(text)
@@ -80,10 +100,14 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Show YAML front matter (hidden by default).")
     p.add_argument("--width", type=int, default=None,
                    help="Render width (defaults to terminal width).")
-    p.add_argument("--theme", choices=["default", "light", "dark"], default="default",
-                   help="Quick style presets.")
+    p.add_argument("--theme",
+        choices=["default", "light", "dark", "github-dark", "github-light"],
+        default="default",
+        help="Quick style presets.")
     p.add_argument("--no-style", action="store_true",
                    help="Disable custom theme styling (plain Rich defaults).")
+    p.add_argument("--code-theme", default=None,
+        help="Pygments theme for fenced code blocks (e.g. github-dark, github-light, monokai, dracula).")
     p.add_argument("--version", action="version", version=f"tfmd {__version__}")
     return p
 
@@ -91,17 +115,13 @@ def choose_theme(name: str) -> Optional[Theme]:
     if name == "default":
         return DEFAULT_THEME
     if name == "light":
-        return Theme({
-            **DEFAULT_THEME.styles,
-            "markdown.link": "underline blue",
-            "markdown.code": "none",
-        })
+        return GH_LIGHT
     if name == "dark":
-        return Theme({
-            **DEFAULT_THEME.styles,
-            "markdown.link": "underline",
-            "markdown.code": "none",
-        })
+        return GH_DARK
+    if name == "github-dark":
+        return GH_DARK
+    if name == "github-light":
+        return GH_LIGHT
     return None
 
 def should_page(pager_flag: str, console: Console) -> bool:
@@ -130,7 +150,9 @@ def load_text(path_arg: Optional[str]) -> Tuple[str, Optional[Path]]:
         data = sys.stdin.read()
         return data, None
 
-def render_doc(console: Console, text: str, width: Optional[int], show_toc: bool, show_fm: bool, soft_wrap: bool):
+def render_doc(console: Console, text: str, width: Optional[int],
+               show_toc: bool, show_fm: bool, soft_wrap: bool,
+               code_theme: str = "github-dark"):
     content, fm = strip_front_matter(text)
     headings = extract_headings(content)
 
@@ -142,16 +164,17 @@ def render_doc(console: Console, text: str, width: Optional[int], show_toc: bool
             border_style="dim",
         )
         console.print(toc_panel, width=width)
-        console.print()  # spacing
+        console.print()
 
     if show_fm and fm:
-        console.print(Panel.fit(Syntax(fm.strip(), "yaml", word_wrap=soft_wrap), title="front-matter", border_style="dim"))
+        console.print(Panel.fit(Syntax(fm.strip(), "yaml", word_wrap=soft_wrap),
+                                title="front-matter", border_style="dim"))
         console.print()
 
     md = Markdown(
         content,
-        code_theme="default",
-        justify=None,
+        code_theme=code_theme,   # <-- uses Pygments theme for fenced code
+        justify="left",          # closer to GitHub layout
         inline_code_lexer="",
         hyperlinks=True,
     )
@@ -163,15 +186,21 @@ def main(argv=None) -> int:
     theme = None if args.no_style else choose_theme(args.theme)
     console = Console(theme=theme, force_terminal=None, width=args.width, record=False)
 
+    code_theme = args.code_theme
+    if code_theme is None:
+        code_theme = "github-light" if args.theme in ("github-light", "light") else "github-dark"
+
     text, _path = load_text(args.file)
 
     use_pager = should_page(args.pager, console)
 
     if use_pager:
         with console.pager(styles=True):
-            render_doc(console, text, args.width, args.toc, args.show_fm, args.soft_wrap)
+            render_doc(console, text, args.width, args.toc, args.show_fm, args.soft_wrap,
+                       code_theme=code_theme)
     else:
-        render_doc(console, text, args.width, args.toc, args.show_fm, args.soft_wrap)
+        render_doc(console, text, args.width, args.toc, args.show_fm, args.soft_wrap,
+                   code_theme=code_theme)
 
     return 0
 
