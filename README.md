@@ -3,24 +3,11 @@
 A fast, pretty **Markdown previewer for the terminal** (WSL/Linux/macOS).  
 Renders headings, lists, tables, links, code blocks (with syntax highlighting), and more — with optional paging via `less` or a **mouse-wheel friendly TUI**.
 
----
+<br>
 
-## ✨ Features
+<br>
 
-- Clean, GitHub-style presets (`--theme github-dark|github-light`)
-- Syntax-highlighted fenced code (`--code-theme …`; defaults follow theme)
-- Optional Table of Contents (`--toc`)
-- Soft wrapping to terminal width (`--soft-wrap`)
-- YAML front-matter hiding (`--show-fm` to reveal)
-- Two pager backends:
-  - **less** (default): lightweight, `/` search, restores screen on quit
-  - **tui** (Textual): mouse wheel + `j/k`, PgUp/PgDn, `g/G`, `q`
-- Streams from **stdin** or reads files
-- Works great in **WSL** and standard Linux terminals
-
----
-
-## 🚀 Quick Start (recommended)
+## Quick Start
 
 From the repo root:
 
@@ -35,6 +22,8 @@ tfmd README.md --toc --soft-wrap --backend tui --theme github-dark
 > If `tfmd` isn’t found, open a new shell or:
 > `export PATH="$HOME/.local/bin:$PATH"`
 
+[Usage walkthrough](#Usage) can be found below.
+
 To uninstall later:
 
 ```bash
@@ -42,9 +31,28 @@ bash scripts/uninstall_tfmd.sh          # remove pipx app/venv
 bash scripts/uninstall_tfmd.sh --purge  # also clean the pager lines from ~/.bashrc
 ```
 
----
+<br>
 
-## 🧰 Manual install options
+<br>
+
+## Features
+
+- Clean, GitHub-style presets (`--theme github-dark|github-light`)
+- Syntax-highlighted fenced code (`--code-theme …`; defaults follow theme)
+- Optional Table of Contents (`--toc`)
+- Soft wrapping to terminal width (`--soft-wrap`)
+- YAML front-matter hiding (`--show-fm` to reveal)
+- Two-pager backends:
+  - **less** (default): lightweight, `/` search, restores screen on quit
+  - **tui** (Textual): mouse wheel + `j/k`, PgUp/PgDn, `g/G`, `q`
+- Streams from **stdin** or reads files
+- Works great in **WSL** and standard Linux terminals
+
+<br>
+
+<br>
+
+## Manual install options
 
 ### A) Global CLI via pipx
 
@@ -62,9 +70,11 @@ pip install rich textual
 python tfmd/cli.py README.md --toc --soft-wrap
 ```
 
----
+<br>
 
-## 📖 Usage
+<br>
+
+## Usage
 
 Basic:
 
@@ -112,9 +122,11 @@ cat README.md | tfmd --toc
 * `--no-style`: disable custom styling
 * `--version`: print version
 
----
+<br>
 
-## 🐞 Troubleshooting
+<br>
+
+## Troubleshooting
 
 * **“tfmd: command not found”**
   `pipx ensurepath && export PATH="$HOME/.local/bin:$PATH"`
@@ -137,9 +149,11 @@ cat README.md | tfmd --toc
   Use default behavior (clears) or avoid `-X`. TFMD uses `less -RF` by default.
   To leave content on exit: `--leave-on-exit` (adds `-X`).
 
----
+<br>
 
-## 🧪 Test file
+<br>
+
+## Test file
 
 A ready-made demo lives at `tests/README_TEST.md`:
 
